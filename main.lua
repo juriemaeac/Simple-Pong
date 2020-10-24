@@ -1,5 +1,4 @@
 --ball, paddle, and frame initialization
-
 ball = {}
 ball.x = 300
 ball.y = 200
@@ -14,40 +13,37 @@ map.offset = 90
 map.width = 600
 map.height = 400
 
-a = {}
-a.width = 10
-a.height = 50
-a.y = 200
-a.x = 660
+player1 = {}
+player1.width = 10
+player1.height = 50
+player1.y = 200
+player1.x = 110
 
-b = {}
-b.width = 10
-b.height = 50
-b.y = 200
-b.x = 110
+player2 = {}
+player2.width = 10
+player2.height = 50
+player2.y = 200
+player2.x = 660
 
-a.score = 0
-b.score = 0
-
-winningPlayer = 0
+player2.score = 0
+player1.score = 0
 
 function love.load()
-    -- set love's default filter to "nearest-neighbor", which essentially
-    -- means there will be no filtering of pixels (blurriness), which is
-    -- important for a nice crisp, 2D look
+    --[[set love's default filter to "nearest-neighbor", which essentially
+    means there will be no filtering of pixels (blurriness), which is
+    important for a nice crisp, 2D look]]
     love.graphics.setDefaultFilter('nearest', 'nearest')
 
     -- setting the title of our application window
-    love.window.setTitle('Pong')
+    --love.window.setTitle('Pong')
 
     -- seed the RNG so that calls to random are always random
     math.randomseed(os.time())
 
     -- font initialization 
-    smallFont = love.graphics.newFont('font.ttf', 8)
-    largeFont = love.graphics.newFont('font.ttf', 16)
-    scoreFont = love.graphics.newFont('font.ttf', 50)
-    love.graphics.setFont(smallFont)
+	smallFont = love.graphics.newFont('font.ttf', 20)
+	scoreFont = love.graphics.newFont('font.ttf', 60)
+	scoreFont1 = love.graphics.newFont('font.ttf', 30)
 
     -- sounds initialization
     sounds = {
@@ -55,23 +51,22 @@ function love.load()
         ['score'] = love.audio.newSource('sounds/score.wav', 'static'),
         ['wall_hit'] = love.audio.newSource('sounds/wall_hit.wav', 'static')
     }
-    
 end
 
 function love.update()
-	ball.x = ball.x + ball.vel.x
-	ball.y = ball.y + ball.vel.y
-
+	ball.x = ball.x + ball.vel.x * 1.03
+	ball.y = ball.y + ball.vel.y * 1.03
+	
 	--map boundaries
 	--right side
 	if ball.x >= (map.width + map.offset) - ball.width then
-		b.score = b.score + 1
+		player1.score = player1.score + 1
 		ball:reset()
 		sounds['score']:play()
 	end
 	--left side
 	if ball.x <= map.offset + (ball.width - 5) then
-		a.score = a.score + 1
+		player2.score = player2.score + 1
 		ball:reset()
 		sounds['score']:play()
 	end
@@ -82,7 +77,6 @@ function love.update()
 		ball:bounce(1, -1)
 		sounds['wall_hit']:play()
 	end
-	
 	--down
 	if ball.y >= (map.height + map.offset) - ball.height then
 		ball:bounce(1, -1)
@@ -90,34 +84,33 @@ function love.update()
 	end
 	
 	--paddles bounces
-	if ball.x > a.x - 5 and ball.y <= a.y + a.height and ball.y >= a.y - ball.height then
-		ball:bounce(-1, 1)
-		ball.x = ball.x - 10
-		sounds['paddle_hit']:play()
-	end 
-	
-
-	if ball.x < b.x + 11 and ball.y <= b.y + b.height and ball.y >= b.y - ball.height then
+	--player1 paddle
+	if ball.x < player1.x + 15 and ball.y <= player1.y + player1.height and ball.y >= player1.y - ball.height then
 		ball:bounce(-1, 1)
 		ball.x = ball.x + 10
 		sounds['paddle_hit']:play()
 	end
-	
+	--player2 paddle
+	if ball.x > player2.x - 5 and ball.y <= player2.y + player2.height and ball.y >= player2.y - ball.height then
+		ball:bounce(-1, 1)
+		ball.x = ball.x - 10
+		sounds['paddle_hit']:play()
+	end 
 
 	--keys testing / controllers
-	--left
-    if love.keyboard.isDown("up") and a.y > map.offset then
-		a.y = a.y - 2
+	--player2 (Left)
+    if love.keyboard.isDown("up") and player2.y > map.offset then
+		player2.y = player2.y - 2
     end
-    if love.keyboard.isDown("down") and a.y + a.height < map.height + map.offset then
-		a.y = a.y + 2
+    if love.keyboard.isDown("down") and player2.y + player2.height < map.height + map.offset then
+		player2.y = player2.y + 2
 	end
-	--right
-    if love.keyboard.isDown("w") and b.y > map.offset then
-		b.y = b.y - 2
+	--player1 (right)
+    if love.keyboard.isDown("w") and player1.y > map.offset then
+		player1.y = player1.y - 2
     end
-    if love.keyboard.isDown("s") and b.y + b.height < map.height + map.offset then
-		b.y = b.y + 2
+    if love.keyboard.isDown("s") and player1.y + player1.height < map.height + map.offset then
+		player1.y = player1.y + 2
     end
 end
 
@@ -136,41 +129,88 @@ function ball:reset()
 	ball.width = 30
 end
 
---[[function winner()
-	a.score = 3]]
+--Application Start up still on going
+--[[function winOpen()
+	love.graphics.print("WELCOME TO PONG", 320,200)
+	love.graphics.print("press enter to play", 280,300)
+end]]
 
 function love.draw()
-	--frame and ball
-	--change the frame
+	--game color and font
+	love.graphics.setColor(1, 1, 1, 1)
+	love.graphics.setFont(scoreFont1)
+	love.graphics.print("PONG", 350,20)
+
+	local x, y = 0, 0
+	local width, height = 100, 100
+	local border_width = 20
+	local border_radius = 10
+
+	--love.graphics.line(395, 90, 395, 490) //centerline not dotted
+
+	--border
+	--change the border
 	love.graphics.rectangle("line", map.offset, map.offset, map.width, map.height, 5, 5, segments)
+	love.graphics.setLineWidth(border_width)
+
+	--ball
 	love.graphics.circle("fill", ball.x, ball.y, 15)
+
+	--center line (draft only)
+	love.graphics.circle("fill", 395, 100, 5)
+	love.graphics.circle("fill", 395, 115, 5)
+	love.graphics.circle("fill", 395, 130, 5)
+	love.graphics.circle("fill", 395, 145, 5)
+	love.graphics.circle("fill", 395, 160, 5)
+	love.graphics.circle("fill", 395, 175, 5)
+	love.graphics.circle("fill", 395, 190, 5)
+	love.graphics.circle("fill", 395, 205, 5)
+	love.graphics.circle("fill", 395, 220, 5)
+	love.graphics.circle("fill", 395, 235, 5)
+	love.graphics.circle("fill", 395, 250, 5)
+	love.graphics.circle("fill", 395, 265, 5)
+	love.graphics.circle("fill", 395, 280, 5)
+	love.graphics.circle("fill", 395, 295, 5)
+	love.graphics.circle("fill", 395, 310, 5)
+	love.graphics.circle("fill", 395, 325, 5)
+	love.graphics.circle("fill", 395, 340, 5)
+	love.graphics.circle("fill", 395, 355, 5)
+	love.graphics.circle("fill", 395, 370, 5)
+	love.graphics.circle("fill", 395, 385, 5)
+	love.graphics.circle("fill", 395, 400, 5)
+	love.graphics.circle("fill", 395, 415, 5)
+	love.graphics.circle("fill", 395, 430, 5)
+	love.graphics.circle("fill", 395, 445, 5)
+	love.graphics.circle("fill", 395, 460, 5)
+	love.graphics.circle("fill", 395, 475, 5)
 
 	--paddles
 	--love.graphics.rectangle( mode, x, y, width, height, rx, ry, segments) -syntax
-	love.graphics.rectangle("fill", a.x, a.y, a.width, a.height, 5, 5, segments)
-	love.graphics.rectangle("fill", b.x, b.y, b.width, b.height, 5, 5, segments)
-
-	love.graphics.setFont(scoreFont)
+	love.graphics.rectangle("fill", player2.x, player2.y, player2.width, player2.height, 5, 5, segments)
+	love.graphics.rectangle("fill", player1.x, player1.y, player1.width, player1.height, 5, 5, segments)
 
 	--draw score
-	--change the font size
-	love.graphics.print(a.score, 520, 120)
-	love.graphics.print(b.score, 220, 120)
-	love.graphics.print("PONG", 350,20)
-
+	displayScore()
+	
 	--draw line middle
 	--change this into dotted line
-	love.graphics.line(395, 90, 395, 490)
+	
 
 	--display fps
-	--change the color
-	love.graphics.print("FPS: "..tostring(love.timer.getFPS( )), 10, 10)
-	--displayFPS()
+	displayFPS()
 end
 
---[[function displayFPS()
-	love.graphics.print("FPS: "..tostring(love.timer.getFPS( )), 10, 10)
+function displayScore()
+	love.graphics.setFont(scoreFont)
+	love.graphics.print(player2.score, 520, 120)
+	love.graphics.print(player1.score, 220, 120)
+end
+
+function displayFPS()
+    -- simple FPS display across all states
+    love.graphics.setFont(smallFont)
     love.graphics.setColor(0, 255, 0, 255)
-end]]
+    love.graphics.print('FPS: ' .. tostring(love.timer.getFPS()), 10, 10)
+end
 
 
