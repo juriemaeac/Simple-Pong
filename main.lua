@@ -1,4 +1,4 @@
---initialization
+--ball, paddle, and frame initialization
 
 ball = {}
 ball.x = 300
@@ -29,10 +29,34 @@ b.x = 110
 a.score = 0
 b.score = 0
 
---sound = love.audio.newSource("pong.wav")
+winningPlayer = 0
 
---Font size of the whole game. I recommend to replace this
-scoreFont = love.graphics.newFont(30)
+function love.load()
+    -- set love's default filter to "nearest-neighbor", which essentially
+    -- means there will be no filtering of pixels (blurriness), which is
+    -- important for a nice crisp, 2D look
+    love.graphics.setDefaultFilter('nearest', 'nearest')
+
+    -- setting the title of our application window
+    love.window.setTitle('Pong')
+
+    -- seed the RNG so that calls to random are always random
+    math.randomseed(os.time())
+
+    -- font initialization 
+    smallFont = love.graphics.newFont('font.ttf', 8)
+    largeFont = love.graphics.newFont('font.ttf', 16)
+    scoreFont = love.graphics.newFont('font.ttf', 50)
+    love.graphics.setFont(smallFont)
+
+    -- sounds initialization
+    sounds = {
+        ['paddle_hit'] = love.audio.newSource('sounds/paddle_hit.wav', 'static'),
+        ['score'] = love.audio.newSource('sounds/score.wav', 'static'),
+        ['wall_hit'] = love.audio.newSource('sounds/wall_hit.wav', 'static')
+    }
+    
+end
 
 function love.update()
 	ball.x = ball.x + ball.vel.x
@@ -43,32 +67,42 @@ function love.update()
 	if ball.x >= (map.width + map.offset) - ball.width then
 		b.score = b.score + 1
 		ball:reset()
+		sounds['score']:play()
 	end
 	--left side
 	if ball.x <= map.offset + (ball.width - 5) then
 		a.score = a.score + 1
 		ball:reset()
+		sounds['score']:play()
 	end
 
 	--walls bounce
 	--up
 	if ball.y <= map.offset + (ball.width - 5) then
 		ball:bounce(1, -1)
+		sounds['wall_hit']:play()
 	end
+	
 	--down
 	if ball.y >= (map.height + map.offset) - ball.height then
 		ball:bounce(1, -1)
+		sounds['wall_hit']:play()
 	end
-
+	
 	--paddles bounces
 	if ball.x > a.x - 5 and ball.y <= a.y + a.height and ball.y >= a.y - ball.height then
 		ball:bounce(-1, 1)
 		ball.x = ball.x - 10
+		sounds['paddle_hit']:play()
 	end 
+	
+
 	if ball.x < b.x + 11 and ball.y <= b.y + b.height and ball.y >= b.y - ball.height then
 		ball:bounce(-1, 1)
 		ball.x = ball.x + 10
+		sounds['paddle_hit']:play()
 	end
+	
 
 	--keys testing / controllers
 	--left
@@ -102,6 +136,9 @@ function ball:reset()
 	ball.width = 30
 end
 
+--[[function winner()
+	a.score = 3]]
+
 function love.draw()
 	--frame and ball
 	--change the frame
@@ -116,13 +153,13 @@ function love.draw()
 	love.graphics.setFont(scoreFont)
 
 	--draw score
-	--change the font style and size
+	--change the font size
 	love.graphics.print(a.score, 520, 120)
 	love.graphics.print(b.score, 220, 120)
 	love.graphics.print("PONG", 350,20)
 
 	--draw line middle
-	--change this indo dotted line
+	--change this into dotted line
 	love.graphics.line(395, 90, 395, 490)
 
 	--display fps
